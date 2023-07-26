@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
-	"log"
+//	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -15,16 +15,17 @@ import (
 type Entry struct {
     id int
     item string
+    finished bool
 }
 
 func commands() []string {
     var commands []string
-    commands = append(commands, "add", "delete", "quit", "?", "show")
+    commands = append(commands, "add", "delete", "quit", "?", "show", "update")
     return commands
 }
 
 func input(prompt string) string {
-    fmt.Println(prompt)
+    fmt.Printf("%s", prompt)
     stdinScanner := bufio.NewScanner(os.Stdin)
     stdinScanner.Scan()
     output := stdinScanner.Text()
@@ -43,8 +44,10 @@ func execCommand(input string) string {
         output = commands()[3]
     } else if input == commands()[4] {
         output = commands()[4]
+    } else if input == commands()[5] {
+        output = commands()[5]
     } else {
-        log.Println("Oops, that is not a valid command.")
+        fmt.Printf("'%s' is not a valid command.\n", input)
     }
     return output
 }
@@ -71,26 +74,18 @@ func addTable() {
         panic(err.Error())
     }
     removeTable.RowsAffected()
-    table, err := connDB().Exec("CREATE TABLE list (id INT, item VARCHAR(30))")
+    table, err := connDB().Exec("CREATE TABLE list (id MEDIUMINT NOT NULL AUTO_INCREMENT, item VARCHAR(30), finished BOOL DEFAULT 0, PRIMARY KEY (id))")
     if err != nil {
         panic(err.Error())
     }
     table.RowsAffected()
 }
-func genId(idCount int) (n int) {
-    var entry Entry
-    count, err := connDB().Query("SELECT COUNT(id) FROM list WHERE id > 0")
-    for count.Next() {
-        err = count.Scan(&entry.id)
-        if err != nil {
-            panic(err.Error())
-        }
-    }
-    fmt.Printf("%T\n", count)
-    return entry.id + 1
-}
 func addTodo(todo string) {
-    addTodo, err := connDB().Exec("INSERT INTO list VALUES (?, ?)", genId(idCount), todo)
+    if len(todo) > 30 {
+        fmt.Printf("Todo item is too long, must be below 30 characters.\n")
+        return 
+    }
+    addTodo, err := connDB().Exec("INSERT INTO list (item) VALUES (?)", todo)
     if err != nil {
         panic(err.Error())
     }
@@ -104,21 +99,41 @@ func removeTodo(todoId string) {
     }
     remove.RowsAffected()
 }
+func updateBool(status string, todoId string) {
+    var isFinished int
+    if status == "y" {
+        isFinished = 1
+    } else if status == "n" {
+        isFinished = 0
+    }
+    id, err := strconv.Atoi(todoId)
+    prep, err := connDB().Prepare("UPDATE list SET finished = ? WHERE id = ?")
+    if err != nil {
+        panic(err.Error())
+    }
+    defer prep.Close()
+    update, err := prep.Exec(isFinished, id)
+    if err != nil {
+        panic(err.Error())
+    }
+    update.RowsAffected()
+}
 func showList() {
     var entry Entry
     show, err := connDB().Query("SELECT * FROM list")
     for show.Next() {
-        err = show.Scan(&entry.id, &entry.item)
+        err = show.Scan(&entry.id, &entry.item, &entry.finished)
         if err != nil {
             panic(err.Error())
         }
-        fmt.Println(entry.id, entry.item)
+        fmt.Printf("%+15v\n", entry)
     }
 }
 func eventLoop() {
     for {
         enter := execCommand(input("Enter command (type ? for list of commands): "))
         if enter == "quit" {
+            connDB().Close()
             break
         } else if enter == "delete" {
             removeTodo(input("Enter numerical id of item to be deleted: "))
@@ -128,21 +143,19 @@ func eventLoop() {
             fmt.Printf("%v\n", "Available commands: " + strings.Join(commands(), ", "))
         } else if enter == "show" {
             showList()
-        } else {
-            break
+        } else if enter == "update" {
+            whichId := input("Enter id of task to be updated: ")
+            answer := input("Have you finished this task? Enter y/n: ")
+            if answer == "y" {
+                updateBool("y", whichId)
+            } else {
+                updateBool("n", whichId)
+            }
         }
     }
-    /*
-    for i := 0; i < todoNum; i++ {
-        addTodo(input("Enter todo: "))
-    }
-    */
 }
 
-var idCount int
 func main() {
-    // ID GENERATION NEEDS TO BE FIXED!!!
-    // DOESN'T UPDATE WHEN ITEMS ARE REMOVED FROM LIST
     addTable()
     eventLoop()
 }
