@@ -40,7 +40,6 @@ func input(prompt string) string {
     return output
 }
 func execCommand(input string) string {
-    commands()
     var output string
     if contains(commands(), input) {
         output = input
