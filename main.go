@@ -17,6 +17,14 @@ type Entry struct {
     item string
     finished bool
 }
+func contains(s []string, str string) bool {
+    for _, el := range s {
+        if el == str {
+            return true
+        }
+    }
+    return false
+}
 
 func commands() []string {
     var commands []string
@@ -34,18 +42,8 @@ func input(prompt string) string {
 func execCommand(input string) string {
     commands()
     var output string
-    if input == commands()[0] {
-        output = commands()[0]
-    } else if input == commands()[1] {
-        output = commands()[1]
-    } else if input == commands()[2] {
-        output = commands()[2]
-    } else if input == commands()[3] {
-        output = commands()[3]
-    } else if input == commands()[4] {
-        output = commands()[4]
-    } else if input == commands()[5] {
-        output = commands()[5]
+    if contains(commands(), input) {
+        output = input
     } else {
         fmt.Printf("'%s' is not a valid command.\n", input)
     }
