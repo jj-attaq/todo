@@ -4,9 +4,16 @@ import (
     "fmt"
     "bufio"
     "os"
+    "strconv"
     "github.com/jj-attaq/todo/utils"
     "github.com/jj-attaq/todo/src/database"
 )
+
+type Entry struct {
+    id int
+    item string
+    finished bool
+}
 
 func contains(s []string, str string) bool {
     for _, el := range s {
