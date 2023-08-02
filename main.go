@@ -8,7 +8,6 @@ import (
 //	"log"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type Entry struct {

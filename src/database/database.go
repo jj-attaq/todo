@@ -2,6 +2,8 @@ package database
 
 import (
     "github.com/jj-attaq/todo/utils"
+    "database/sql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func connDB() (db *sql.DB) {
