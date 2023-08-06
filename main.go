@@ -14,7 +14,7 @@ import (
 func eventLoop() {
     input := commands.Input
     for {
-        enter := input("Enter command (type ? for list of commands): ")
+        enter := commands.ExecCommand(input("Enter command (type ? for list of commands): "))
         if enter == "quit" {
             break
         } else if enter == "delete" {
