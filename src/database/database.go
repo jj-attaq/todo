@@ -6,7 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func connDB() (db *sql.DB) {
+func ConnDB() (db *sql.DB) {
     /*
     db, err := sql.Open(
         input("Please input dbDriver, mysql for example: "), 

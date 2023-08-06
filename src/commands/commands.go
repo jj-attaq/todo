@@ -23,55 +23,55 @@ func contains(s []string, str string) bool {
     }
     return false
 }
-func commands() []string {
+func Commands() []string {
     var commands []string
     commands = append(commands, "add", "delete", "quit", "?", "show", "update")
     return commands
 }
-func input(prompt string) string {
+func Input(prompt string) string {
     fmt.Printf("%s", prompt)
     stdinScanner := bufio.NewScanner(os.Stdin)
     stdinScanner.Scan()
     output := stdinScanner.Text()
     return output
 }
-func execCommand(input string) string {
+func ExecCommand(input string) string {
     var output string
-    if contains(commands(), input) {
+    if contains(Commands(), input) {
         output = input
     } else {
         fmt.Printf("'%s' is not a valid command.\n", input)
     }
     return output
 }
-func addTable() {
-    removeTable, err := database.connDB().Exec("DROP TABLE IF EXISTS list")
+func AddTable() {
+    removeTable, err := database.ConnDB().Exec("DROP TABLE IF EXISTS list")
     utils.HandleError(err)
 
     removeTable.RowsAffected()
-    table, err := database.connDB().Exec("CREATE TABLE list (id MEDIUMINT NOT NULL AUTO_INCREMENT, item VARCHAR(30), finished BOOL DEFAULT 0, PRIMARY KEY (id))")
+    table, err := database.ConnDB().Exec("CREATE TABLE list (id MEDIUMINT NOT NULL AUTO_INCREMENT, item VARCHAR(30), finished BOOL DEFAULT 0, PRIMARY KEY (id))")
     utils.HandleError(err)
 
     table.RowsAffected()
 }
-func addTodo(todo string) {
+func AddTodo(todo string) {
     if len(todo) > 30 {
         fmt.Printf("Todo item is too long, must be below 30 characters.\n")
         return 
     }
-    addTodo, err := database.connDB().Exec("INSERT INTO list (item) VALUES (?)", todo)
+    addTodo, err := database.ConnDB().Exec("INSERT INTO list (item) VALUES (?)", todo)
     utils.HandleError(err)
 
     addTodo.RowsAffected()
 }
-func removeTodo(todoId string) {
+func RemoveTodo(todoId string) {
     id, err := strconv.Atoi(todoId)
-    remove, err := database.connDB().Exec("DELETE FROM list WHERE ? = id", id)
+    remove, err := database.ConnDB().Exec("DELETE FROM list WHERE ? = id", id)
     utils.HandleError(err)
 
     remove.RowsAffected()
 }
-func updateBool(status string, todoId string) {
+func UpdateBool(status string, todoId string) {
     var isFinished int
     if status == "y" {
         isFinished = 1
@@ -79,7 +79,7 @@ func updateBool(status string, todoId string) {
         isFinished = 0
     }
     id, err := strconv.Atoi(todoId)
-    prep, err := database.connDB().Prepare("UPDATE list SET finished = ? WHERE id = ?")
+    prep, err := database.ConnDB().Prepare("UPDATE list SET finished = ? WHERE id = ?")
     utils.HandleError(err)
 
     defer prep.Close()
@@ -88,9 +88,9 @@ func updateBool(status string, todoId string) {
 
     update.RowsAffected()
 }
-func showList() {
+func ShowList() {
     var entry Entry
-    show, err := database.connDB().Query("SELECT * FROM list")
+    show, err := database.ConnDB().Query("SELECT * FROM list")
     for show.Next() {
         err = show.Scan(&entry.id, &entry.item, &entry.finished)
         utils.HandleError(err)
