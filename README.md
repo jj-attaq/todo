@@ -1,0 +1,1 @@
+curl http://localhost:8080/show \--include \--header "Content-Type: application/json" \--request "POST" \--data '{"id": 10, "item": "conquer the world", "finished": false, "uuid": "517386cf-ff97-4798-b546-3d08ab9342ae"}'

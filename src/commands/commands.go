@@ -4,21 +4,23 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jj-attaq/todo/src/database"
 	"github.com/jj-attaq/todo/utils"
 )
 
-//var commands = []string{"add", "delete", "quit", "?", "show", "update"}
+var AllTodos []Entry
 
 type Entry struct {
-	Id       int
-	Item     string
-	Finished bool
-	UniqueID string
+	Id       int    `json:"id"`
+	Item     string `json:"item"`
+	Finished bool   `json:"finished"`
+	UniqueID string `json:"uuid"`
 }
 
 func contains(s []string, str string) bool {
@@ -29,6 +31,9 @@ func contains(s []string, str string) bool {
 	}
 	return false
 }
+
+// change Input to work for api, so that a request can specify all fields when
+// entering new entries outside terminal
 func Input(prompt string) string {
 	fmt.Printf("%s", prompt)
 	stdinScanner := bufio.NewScanner(os.Stdin)
@@ -43,7 +48,6 @@ func Commands() []string {
 }
 func ExecCommand(input string) string {
 	var output string
-	//	if contains(commands, input) {
 	if contains(Commands(), input) {
 		output = input
 	} else {
@@ -108,4 +112,53 @@ func ShowList() {
 
 		fmt.Printf("%+8v\n", string(res))
 	}
+}
+
+/*
+	func AddTodo(todo string) {
+		if len(todo) > 30 {
+			fmt.Printf("Todo item is too long, must be below 30 characters.\n")
+			return
+		}
+		uniqueID := uuid.New()
+		addTodo, err := database.ConnDB().Exec("INSERT INTO list (item, uniqueID) VALUES (?, ?)", todo, uniqueID)
+		utils.HandleError(err)
+
+		addTodo.RowsAffected()
+	}
+*/
+func AddTask(c *gin.Context) {
+	var newEntry Entry
+	if err := c.BindJSON(&newEntry); err != nil {
+		panic(err)
+	}
+	todo := newEntry.Item
+
+	uniqueID := uuid.New()
+	addTodo, err := database.ConnDB().Exec("INSERT INTO list (item, uniqueID) VALUES (?, ?)", todo, uniqueID)
+	utils.HandleError(err)
+
+	addTodo.RowsAffected()
+}
+func PostTodos(c *gin.Context) {
+	var newEntry Entry
+	if err := c.BindJSON(&newEntry); err != nil {
+		panic(err)
+	}
+	AllTodos = append(AllTodos, newEntry)
+	c.IndentedJSON(http.StatusCreated, newEntry)
+}
+func ShowJSON() []Entry {
+	var entry Entry
+	show, err := database.ConnDB().Query("SELECT * FROM list")
+	result := AllTodos
+	for show.Next() {
+		err = show.Scan(&entry.Id, &entry.Item, &entry.Finished, &entry.UniqueID)
+		utils.HandleError(err)
+
+		utils.HandleError(err)
+		result = append(result, entry)
+	}
+
+	return result
 }

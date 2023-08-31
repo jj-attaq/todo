@@ -3,9 +3,12 @@ package main
 import (
 	//    "github.com/jj-attaq/todo/utils"
 	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 	"github.com/jj-attaq/todo/src/commands"
 	"github.com/jj-attaq/todo/src/database"
-	"strings"
 	//	"log"
 )
 
@@ -35,7 +38,32 @@ func eventLoop() {
 	}
 }
 
+/*
+func greet(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%v\n", "Todo list: ")
+	fmt.Fprintf(w, "%s", commands.ShowJSON())
+
+	commands.ShowJSON()
+}
+*/
+
+func getTodos(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, commands.ShowJSON())
+}
+
 func main() {
+
+	go func() {
+		router := gin.Default()
+		router.GET("/show", getTodos)
+		router.POST("/show", commands.AddTask)
+
+		router.Run("localhost:8080")
+		/*
+			http.HandleFunc("/", greet)
+			http.ListenAndServe(":8080", nil)
+		*/
+	}()
 	commands.AddTable()
 	eventLoop()
 	database.ConnDB().Close()
