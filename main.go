@@ -3,7 +3,6 @@ package main
 import (
 	//    "github.com/jj-attaq/todo/utils"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -27,44 +26,36 @@ func eventLoop() {
 		} else if enter == "show" {
 			commands.ShowList()
 		} else if enter == "update" {
-			whichId := input("Enter id of task to be updated: ")
-			answer := input("Have you finished this task? Enter y/n: ")
-			if answer == "y" {
-				commands.UpdateBool("y", whichId)
-			} else {
-				commands.UpdateBool("n", whichId)
-			}
+			whichId := input("Enter uuid of task to be updated: ")
+			commands.UpdateBool(whichId)
+			/*
+				whichId := input("Enter id of task to be updated: ")
+				answer := input("Have you finished this task? Enter y/n: ")
+				if answer == "y" {
+					commands.UpdateBool("y", whichId)
+				} else {
+					commands.UpdateBool("n", whichId)
+				}
+			*/
 		}
 	}
 }
 
 /*
-func greet(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "%v\n", "Todo list: ")
-	fmt.Fprintf(w, "%s", commands.ShowJSON())
-
-	commands.ShowJSON()
-}
-*/
-
-func getTodos(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, commands.ShowJSON())
-}
+ */
 
 func main() {
-
 	go func() {
 		router := gin.Default()
-		router.GET("/show", getTodos)
-		router.POST("/show", commands.AddTask)
+		router.GET("/todo-list", commands.GetTodos)
+		router.POST("/todo-list", commands.AddTask)
+		router.GET("/todo-list/:uuid", commands.GetOneTodo)
+		router.GET("/todo-list/remove/:uuid", commands.RemoveTask)
+		router.GET("/todo-list/update/:uuid", commands.UpdateTask)
 
 		router.Run("localhost:8080")
-		/*
-			http.HandleFunc("/", greet)
-			http.ListenAndServe(":8080", nil)
-		*/
 	}()
-	commands.AddTable()
+	//	commands.AddTable() // put back after testing
 	eventLoop()
 	database.ConnDB().Close()
 }

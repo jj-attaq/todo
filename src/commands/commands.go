@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -76,28 +75,26 @@ func AddTodo(todo string) {
 
 	addTodo.RowsAffected()
 }
-func RemoveTodo(todoId string) {
-	id, err := strconv.Atoi(todoId)
-	remove, err := database.ConnDB().Exec("DELETE FROM list WHERE ? = Id", id)
-	utils.HandleError(err)
-
-	remove.RowsAffected()
-}
-func UpdateBool(status string, todoId string) {
+func UpdateBool(todoId string) {
 	var isFinished int
-	if status == "y" {
-		isFinished = 1
-	} else if status == "n" {
-		isFinished = 0
+	var entry Entry
+	status, err := database.ConnDB().Query("SELECT * FROM list WHERE uniqueID = ?", todoId)
+	for status.Next() {
+		err = status.Scan(&entry.Id, &entry.Item, &entry.Finished, &entry.UniqueID)
+		utils.HandleError(err)
+		if entry.Finished == false {
+			isFinished = 1
+		} else if entry.Finished == true {
+			isFinished = 0
+		}
 	}
-	id, err := strconv.Atoi(todoId)
-	prep, err := database.ConnDB().Prepare("UPDATE list SET Finished = ? WHERE Id = ?")
+	prep, err := database.ConnDB().Prepare("UPDATE list SET Finished = ? WHERE uniqueID = ?")
 	utils.HandleError(err)
 
 	defer prep.Close()
-	update, err := prep.Exec(isFinished, id)
-	utils.HandleError(err)
+	update, err := prep.Exec(isFinished, todoId)
 
+	utils.HandleError(err)
 	update.RowsAffected()
 }
 func ShowList() {
@@ -113,20 +110,6 @@ func ShowList() {
 		fmt.Printf("%+8v\n", string(res))
 	}
 }
-
-/*
-	func AddTodo(todo string) {
-		if len(todo) > 30 {
-			fmt.Printf("Todo item is too long, must be below 30 characters.\n")
-			return
-		}
-		uniqueID := uuid.New()
-		addTodo, err := database.ConnDB().Exec("INSERT INTO list (item, uniqueID) VALUES (?, ?)", todo, uniqueID)
-		utils.HandleError(err)
-
-		addTodo.RowsAffected()
-	}
-*/
 func AddTask(c *gin.Context) {
 	var newEntry Entry
 	if err := c.BindJSON(&newEntry); err != nil {
@@ -140,13 +123,43 @@ func AddTask(c *gin.Context) {
 
 	addTodo.RowsAffected()
 }
-func PostTodos(c *gin.Context) {
-	var newEntry Entry
-	if err := c.BindJSON(&newEntry); err != nil {
-		panic(err)
+
+func RemoveTodo(todoId string) {
+	//	id, err := strconv.Atoi(todoId)
+	remove, err := database.ConnDB().Exec("DELETE FROM list WHERE ? = uniqueID", todoId)
+	utils.HandleError(err)
+
+	remove.RowsAffected()
+}
+
+func UpdateTask(c *gin.Context) {
+	uuid := c.Param("uuid")
+	for _, el := range ShowJSON() {
+		if el.UniqueID == uuid {
+			UpdateBool(uuid)
+		}
 	}
-	AllTodos = append(AllTodos, newEntry)
-	c.IndentedJSON(http.StatusCreated, newEntry)
+}
+func GetTodos(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, ShowJSON())
+}
+func GetOneTodo(c *gin.Context) {
+	uuid := c.Param("uuid")
+	for _, el := range ShowJSON() {
+		if el.UniqueID == uuid {
+			c.IndentedJSON(http.StatusOK, el)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
+}
+func RemoveTask(c *gin.Context) {
+	uuid := c.Param("uuid")
+	for _, el := range ShowJSON() {
+		if el.UniqueID == uuid {
+			RemoveTodo(uuid)
+		}
+	}
 }
 func ShowJSON() []Entry {
 	var entry Entry
