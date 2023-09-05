@@ -69,6 +69,10 @@ func AddTodo(todo string) {
 		fmt.Printf("Todo item is too long, must be below 30 characters.\n")
 		return
 	}
+	if len(todo) <= 0 {
+		fmt.Printf("Todo item is too short, must be at least 1 characters.\n")
+		return
+	}
 	uniqueID := uuid.New()
 	addTodo, err := database.ConnDB().Exec("INSERT INTO list (item, uniqueID) VALUES (?, ?)", todo, uniqueID)
 	utils.HandleError(err)

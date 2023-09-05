@@ -14,7 +14,7 @@ import (
 func eventLoop() {
 	input := commands.Input
 	for {
-		enter := commands.ExecCommand(input("Enter command (type ? for list of commands): "))
+		enter := commands.ExecCommand(input("Enter command (type ? for list of commands): \n"))
 		if enter == "quit" {
 			break
 		} else if enter == "delete" {
@@ -28,15 +28,6 @@ func eventLoop() {
 		} else if enter == "update" {
 			whichId := input("Enter uuid of task to be updated: ")
 			commands.UpdateBool(whichId)
-			/*
-				whichId := input("Enter id of task to be updated: ")
-				answer := input("Have you finished this task? Enter y/n: ")
-				if answer == "y" {
-					commands.UpdateBool("y", whichId)
-				} else {
-					commands.UpdateBool("n", whichId)
-				}
-			*/
 		}
 	}
 }
@@ -62,31 +53,13 @@ func CORSMiddleware() gin.HandlerFunc {
 func main() {
 	go func() {
 		router := gin.Default()
-		router.Use(CORSMiddleware())
-		/*
-			router.Use(cors.New(cors.Config{
-				AllowOrigins:     []string{"http://localhost:5173/"},
-				AllowMethods:     []string{"PUT", "PATCH", "GET", "POST"},
-				AllowHeaders:     []string{"Origin", "Access-Control-Allow-Origin"},
-				ExposeHeaders:    []string{"Content-Length"},
-				AllowCredentials: true,
-				AllowOriginFunc: func(origin string) bool {
-					return origin == "https://github.com"
-				},
-				MaxAge: 12 * time.Hour,
-			}))
-		*/
-		/*
-			corsConfig := cors.DefaultConfig()
+		router.ForwardedByClientIP = true               // gets rid of gin proxy trust warning
+		router.SetTrustedProxies([]string{"127.0.0.1"}) // gets rid of gin proxy trust warning
 
-			corsConfig.AllowOrigins = []string{"http://localhost:5173/"}
-			corsConfig.AllowCredentials = true
-			corsConfig.AddAllowMethods("OPTIONS")
-			router.Use(cors.New(corsConfig))
-		*/
+		router.Use(CORSMiddleware())
 
 		router.GET("/todo-list", commands.GetTodos)
-		router.POST("/todo-list", commands.AddTask)
+		router.POST("/todo-list/add", commands.AddTask)
 		router.GET("/todo-list/:uuid", commands.GetOneTodo)
 		router.GET("/todo-list/remove/:uuid", commands.RemoveTask)
 		router.GET("/todo-list/update/:uuid", commands.UpdateTask)
