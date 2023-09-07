@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bufio"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,12 +17,12 @@ import (
 var AllTodos []Entry
 
 type Entry struct {
-	Id       int    `json:"id"`
-	UserID   string `json:"userID"`
-	UserPw   string `json:"userPw"`
-	Item     string `json:"item"`
-	Finished bool   `json:"finished"`
-	UniqueID string `json:"uuid"`
+	Id       int            `json:"id"`
+	UserID   sql.NullString `json:"userID"`
+	UserPw   sql.NullString `json:"userPw"`
+	Item     string         `json:"item"`
+	Finished bool           `json:"finished"`
+	UniqueID string         `json:"uuid"`
 }
 
 func contains(s []string, str string) bool {
