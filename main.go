@@ -61,8 +61,8 @@ func main() {
 		router.GET("/todo-list", commands.GetTodos)
 		router.POST("/todo-list/add", commands.AddTask)
 		router.GET("/todo-list/:uuid", commands.GetOneTodo)
-		router.GET("/todo-list/remove/:uuid", commands.RemoveTask)
-		router.GET("/todo-list/update/:uuid", commands.UpdateTask)
+		router.DELETE("/todo-list/remove/:uuid", commands.RemoveTask)
+		router.POST("/todo-list/update/:uuid", commands.UpdateTask)
 
 		router.Run("localhost:8080")
 	}()
