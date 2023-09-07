@@ -66,7 +66,7 @@ func main() {
 
 		router.Run("localhost:8080")
 	}()
-	//	commands.AddTable() // put back after testing
+	commands.AddTable() // put back after testing
 	eventLoop()
 	database.ConnDB().Close()
 }

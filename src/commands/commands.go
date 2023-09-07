@@ -17,6 +17,8 @@ var AllTodos []Entry
 
 type Entry struct {
 	Id       int    `json:"id"`
+	UserID   string `json:"userID"`
+	UserPw   string `json:"userPw"`
 	Item     string `json:"item"`
 	Finished bool   `json:"finished"`
 	UniqueID string `json:"uuid"`
@@ -59,7 +61,7 @@ func AddTable() {
 	utils.HandleError(err)
 
 	removeTable.RowsAffected()
-	table, err := database.ConnDB().Exec("CREATE TABLE list (id MEDIUMINT NOT NULL AUTO_INCREMENT, item VARCHAR(30), finished BOOL DEFAULT 0, PRIMARY KEY (id), uniqueID VARCHAR(255))")
+	table, err := database.ConnDB().Exec("CREATE TABLE list (id MEDIUMINT NOT NULL AUTO_INCREMENT, userID VARCHAR(255) DEFAULT NULL, userPw VARCHAR(255) DEFAULT NULL, item VARCHAR(30), finished BOOL DEFAULT 0, PRIMARY KEY (id), uniqueID VARCHAR(255))")
 	utils.HandleError(err)
 
 	table.RowsAffected()
@@ -84,7 +86,7 @@ func UpdateBool(todoId string) {
 	var entry Entry
 	status, err := database.ConnDB().Query("SELECT * FROM list WHERE uniqueID = ?", todoId)
 	for status.Next() {
-		err = status.Scan(&entry.Id, &entry.Item, &entry.Finished, &entry.UniqueID)
+		err = status.Scan(&entry.Id, &entry.UserID, &entry.UserPw, &entry.Item, &entry.Finished, &entry.UniqueID)
 		utils.HandleError(err)
 		if entry.Finished == false {
 			isFinished = 1
@@ -105,7 +107,7 @@ func ShowList() {
 	var entry Entry
 	show, err := database.ConnDB().Query("SELECT * FROM list")
 	for show.Next() {
-		err = show.Scan(&entry.Id, &entry.Item, &entry.Finished, &entry.UniqueID)
+		err = show.Scan(&entry.Id, &entry.UserID, &entry.UserPw, &entry.Item, &entry.Finished, &entry.UniqueID)
 		utils.HandleError(err)
 
 		res, err := json.MarshalIndent(entry, "", "    ")
@@ -170,7 +172,7 @@ func ShowJSON() []Entry {
 	show, err := database.ConnDB().Query("SELECT * FROM list")
 	result := AllTodos
 	for show.Next() {
-		err = show.Scan(&entry.Id, &entry.Item, &entry.Finished, &entry.UniqueID)
+		err = show.Scan(&entry.Id, &entry.UserID, &entry.UserPw, &entry.Item, &entry.Finished, &entry.UniqueID)
 		utils.HandleError(err)
 
 		utils.HandleError(err)
