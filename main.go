@@ -32,9 +32,6 @@ func eventLoop() {
 	}
 }
 
-/*
- */
-
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -50,6 +47,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
 func main() {
 	go func() {
 		router := gin.Default()
@@ -66,7 +64,7 @@ func main() {
 
 		router.Run("localhost:8080")
 	}()
-	commands.AddTable() // put back after testing
+	//	commands.AddTable() // put back after testing
 	eventLoop()
 	database.ConnDB().Close()
 }

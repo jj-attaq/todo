@@ -5,6 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jj-attaq/todo/utils"
 )
+// Check out GORM -> 'Object Relational Mapping tool'
 
 func ConnDB() (db *sql.DB) {
 	/*
