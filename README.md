@@ -1,4 +1,11 @@
+crud:
 https://www.youtube.com/watch?v=lf_kiH_NPvM
+
+jwt & auth:
+https://www.youtube.com/watch?v=ma7rUS_vW9M
+
+architecture: 
+https://www.youtube.com/watch?v=EqniGcAijDI
 ## Igor's suggestions
 ### Simple REST API for a To-Do List
 
@@ -9,6 +16,7 @@ https://www.youtube.com/watch?v=lf_kiH_NPvM
     X Read tasks (single & all).
     X Update tasks.
     X Delete tasks.
+    X uuid implemented.
 
 2. Intermediate Features:
 

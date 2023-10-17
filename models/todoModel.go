@@ -7,20 +7,16 @@ import (
 )
 
 type Todo struct {
-	// ID        string `gorm:"default:uuid_generate_v4()"`
     ID       uuid.UUID `gorm:"primary_key; unique; type:uuid; column:id; default:uuid_generate_v4()"`
     CreatedAt time.Time
     UpdatedAt time.Time
     DeletedAt gorm.DeletedAt `gorm:"index"`
-    // UserID   string
-    // UserPW   string
+    UserID  uuid.UUID  // ID from user table this is this table's 'Foreign key'
     Title       string
     Description string
     Status      bool
-    // UniqueID string
 }
-
-/* func (user *Todo) BeforeCreate(db *gorm.DB) error {
-	user.ID = uuid.New().String()
-	return nil
-} */
+// https://launchschool.com/books/sql/read/table_relationships
+// Raw sql for foreign key, find gorm version.
+// FOREIGN KEY (fk_col_name)
+// REFERENCES target_table_name (pk_col_name);
