@@ -11,7 +11,7 @@ type Todo struct {
     CreatedAt time.Time
     UpdatedAt time.Time
     DeletedAt gorm.DeletedAt `gorm:"index"`
-    UserID  uuid.UUID  // ID from user table this is this table's 'Foreign key'
+    UserID  uuid.UUID  `gorm:"required"` // ID from user table this is this table's 'Foreign key'
     Title       string
     Description string
     Status      bool

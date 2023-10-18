@@ -25,11 +25,12 @@ func main() {
 
     // Handlers
     router := gin.Default()
-    router.GET("/todos", commands.GetAllTodos)
-    router.GET("/todos/:id", commands.GetTodo)
-    router.POST("/addTodo", commands.AddTodo)
-    router.PUT("/updateTodo/:id", commands.UpdateTodo)
-    router.DELETE("/deleteTodo/:id", commands.DeleteTodo)
+    router.GET("/todos/:UserID", commands.GetAllTodos) // might need to make POST because of user spec in json body, or use GET with :UserID in GET call
+    router.GET("/todos/:UserID/:id", commands.GetTodo)
+    router.POST("/addTodo", commands.AddTodo) // UserID in json body
+    router.PUT("/updateTodo", commands.UpdateTodo)
+    router.PUT("/updateUser", commands.UpdateUser)
+    router.DELETE("/deleteTodo", commands.DeleteTodo)
     router.POST("/register", commands.Register)
     router.POST("/login", commands.Login)
 
