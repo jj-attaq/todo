@@ -11,10 +11,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type reqBody struct {
+// request body
+/* type reqBody struct {
+    todoReq
+    userReq
+} */
+type todoReq struct {
     ID uuid.UUID // Todo
     Title string // Todo
     Body  string // Todo
+    User uuid.UUID // User
+}
+type userReq struct {
     User uuid.UUID // User
     Name string // User
     Email string // User
@@ -24,10 +32,10 @@ type reqBody struct {
 }
 
 func AddTodo(c *gin.Context) {
-    var body reqBody
-	c.Bind(&body)
+    var todoBody todoReq
+	c.Bind(&todoBody)
 
-	todo := models.Todo{UserID: body.User,Title: body.Title, Description: body.Body}
+	todo := models.Todo{UserID: todoBody.User,Title: todoBody.Title, Description: todoBody.Body}
 	result := initializers.DB.Create(&todo)
 	if result.Error != nil {
 		c.Status(400)
@@ -82,12 +90,12 @@ func GetTodo(c *gin.Context) {
 
 func DeleteTodo(c *gin.Context) {
 	// id := c.Param("id")
-    var body reqBody
-    c.Bind(&body)
+    var todoBody todoReq
+    c.Bind(&todoBody)
 
 	var todo models.Todo
 
-	result := initializers.DB.Where("user_id = ?", body.User).Delete(&todo, "id = ?", body.ID)
+	result := initializers.DB.Where("user_id = ?", todoBody.User).Delete(&todo, "id = ?", todoBody.ID)
 
     // current version returns 200 with empty request body, change later
 	if result.Error != nil {
@@ -99,11 +107,12 @@ func DeleteTodo(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-    var body reqBody
-    c.Bind(&body)
-    pw := encrypt(body.Password)
-    body.Password = pw
-    user := models.User{Username: body.Name, Email: body.Email, Password: body.Password}
+    var userBody userReq
+    c.Bind(&userBody)
+
+    pw := encrypt(userBody.Password)
+    userBody.Password = pw
+    user := models.User{Username: userBody.Name, Email: userBody.Email, Password: userBody.Password}
 
 	result := initializers.DB.Create(&user)
 	if result.Error != nil {
@@ -117,17 +126,17 @@ func Register(c *gin.Context) {
 
 func Login(c *gin.Context) {
     // must be a better way to do this, check out gin.Accounts?
-    var body reqBody
-    c.Bind(&body)
+    var userBody userReq
+    c.Bind(&userBody)
 
-    email := body.Email
+    email := userBody.Email
     // pw := c.Param("password")
     var user models.User
     result := initializers.DB.First(&user, "email = ?", email)
     /* fmt.Println(user.Password)
-    fmt.Println(body.Password) */
+    fmt.Println(userBody.Password) */
 
-    match := checkPasswordHash(body.Password, user.Password)
+    match := checkPasswordHash(userBody.Password, user.Password)
 	if (result.Error != nil) || (!match) {
 		c.Status(400)
 		return
@@ -139,12 +148,12 @@ func Login(c *gin.Context) {
 
 func UpdateTodo(c *gin.Context) {
 	// id := c.Param("id")
-    var body reqBody
-    c.Bind(&body)
+    var todoBody todoReq
+	c.Bind(&todoBody)
 
 	var todo models.Todo
 
-	result := initializers.DB.Where("user_id = ?", body.User).First(&todo, "id = ?", body.ID)
+	result := initializers.DB.Where("user_id = ?", todoBody.User).First(&todo, "id = ?", todoBody.ID)
 	if result.Error != nil {
 		c.Status(400)
 		return
@@ -162,28 +171,29 @@ func UpdateTodo(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
-    var body reqBody
-    c.Bind(&body)
-    pw := encrypt(body.NewPassword)
+    var userBody userReq
+    c.Bind(&userBody)
+    pw := encrypt(userBody.NewPassword)
 
     var user models.User
-    result := initializers.DB.First(&user, "id = ?", body.User)
+    result := initializers.DB.First(&user, "id = ?", userBody.User)
     
     /* info, err := json.MarshalIndent(user, "\t", "")
     if err != nil {
         log.Println(err)
     }
     fmt.Println(string(info[:])) */
+    match := checkPasswordHash(userBody.Password, user.Password)
 
-    if result.Error != nil { // NEVER FORGET .ERROR AFTER RESULT !!! I REPEAT, NEVER EVER FORGET .ERROR !!!
+    if result.Error != nil || !match { // NEVER FORGET .ERROR AFTER RESULT !!! I REPEAT, NEVER EVER FORGET .ERROR !!!
 		c.Status(400)
 		return
     } else {
-        if len(body.NewPassword) > 0 {
+        if len(userBody.NewPassword) > 0 {
             initializers.DB.Model(&user).Update("password", pw)
         }
-        if len(body.NewEmail) > 0 {
-            initializers.DB.Model(&user).Update("email", body.NewEmail)
+        if len(userBody.NewEmail) > 0 {
+            initializers.DB.Model(&user).Update("email", userBody.NewEmail)
         }
 		c.JSON(200, gin.H{
 			"user": user,
