@@ -11,13 +11,13 @@ func init() {
 }
 
 func main() {
-    if initializers.DB.Migrator().HasTable(&models.Todo{}) {
-        initializers.DB.Migrator().DropTable(&models.Todo{})
-    }
-    if initializers.DB.Migrator().HasTable(&models.User{}) {
-        initializers.DB.Migrator().DropTable(&models.User{})
-    }
-    initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+	if initializers.DB.Migrator().HasTable(&models.Todo{}) {
+		initializers.DB.Migrator().DropTable(&models.Todo{})
+	}
+	if initializers.DB.Migrator().HasTable(&models.User{}) {
+		initializers.DB.Migrator().DropTable(&models.User{})
+	}
+	initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	initializers.DB.AutoMigrate(&models.Todo{})
-    initializers.DB.AutoMigrate(&models.User{})
+	initializers.DB.AutoMigrate(&models.User{})
 }

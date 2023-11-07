@@ -1,3 +1,5 @@
+might be useful: 
+https://codevoweb.com/golang-and-gorm-user-registration-email-verification/
 crud:
 https://www.youtube.com/watch?v=lf_kiH_NPvM
 
