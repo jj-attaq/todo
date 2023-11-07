@@ -33,6 +33,9 @@ func main() {
 	router.DELETE("/deleteTodo", commands.DeleteTodo)
 	router.POST("/register", commands.Register)
 	router.POST("/login", commands.Login)
+    router.GET("/welcome", commands.Welcome)
+    router.POST("/refresh", commands.Refresh)
+    router.GET("/logout", commands.Logout)
 
 	// Graceful shutdown
 	port := os.Getenv("PORT")

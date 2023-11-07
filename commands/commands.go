@@ -178,13 +178,102 @@ func Login(c *gin.Context) {
         Value: sessionToken,
         Expires: expiresAt,
     })
-    // log.Println(sessions)
+    log.Println(sessions)
     // END NEW!
 
 	c.JSON(200, gin.H{
 		"user": user,
         "token":sessionToken,
 	})
+}
+
+func Welcome(c *gin.Context) {
+    cookie, err := c.Request.Cookie("session_token")
+    if err != nil {
+        if err == http.ErrNoCookie {
+            c.Status(401)
+            return
+        }
+        c.Status(400)
+        return
+    }
+
+    sessionToken := cookie.Value
+
+    userSession, exists := sessions[sessionToken]
+    if !exists {
+        c.Status(401)
+        return
+    }
+    if userSession.isExpired() {
+        delete(sessions, sessionToken)
+        c.Status(401)
+        return
+    }
+
+    log.Println(sessions)
+	c.JSON(200, gin.H{
+        "welcome": userSession.Email,
+	})
+}
+
+func Refresh(c *gin.Context) {
+    cookie, err := c.Request.Cookie("session_token")
+    if err != nil {
+        if err == http.ErrNoCookie {
+            c.Status(401)
+            return
+        }
+        c.Status(400)
+        return
+    }
+
+    sessionToken := cookie.Value
+
+    userSession, exists := sessions[sessionToken]
+    if !exists {
+        c.Status(401)
+        return
+    }
+    if userSession.isExpired() {
+        delete(sessions, sessionToken)
+        c.Status(401)
+        return
+    }
+
+    newSessionToken := uuid.NewString()
+    expiresAt := time.Now().Add(120 * time.Second)
+
+    sessions[newSessionToken] = session{
+        Email: userSession.Email,
+        expiry: expiresAt,
+    }
+    delete(sessions, sessionToken)
+    http.SetCookie(c.Writer, &http.Cookie{
+        Name: "session_token",
+        Value: newSessionToken,
+        Expires: expiresAt,
+    })
+}
+
+func Logout(c *gin.Context) {
+    cookie, err := c.Request.Cookie("session_token")
+    if err != nil {
+        if err == http.ErrNoCookie {
+            c.Status(401)
+            return
+        }
+        c.Status(400)
+        return
+    }
+
+    sessionToken := cookie.Value
+    delete(sessions, sessionToken)
+    http.SetCookie(c.Writer, &http.Cookie{
+        Name: "session_token",
+        Value: "",
+        Expires: time.Now(),
+    })
 }
 
 func UpdateTodo(c *gin.Context) {
