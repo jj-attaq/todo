@@ -49,7 +49,14 @@ func AddTodo(c *gin.Context) {
         c.Bind(&todoBody)
         // var userBody userReq
         // c.Bind(&userBody)
+
         userID := getUserID(c)
+        uid, err := c.Cookie("session_token")
+        if err != nil {
+            panic(err)
+        }
+
+        log.Printf("UID: %+v", uid)
 
         // todo := models.Todo{UserID: todoBody.User, Title: todoBody.Title, Description: todoBody.Body}
         todo := models.Todo{UserID: userID, Title: todoBody.Title, Description: todoBody.Body}
@@ -127,21 +134,25 @@ func GetTodo(c *gin.Context) {
 }
 
 func DeleteTodo(c *gin.Context) {
-	// id := c.Param("id")
-	var todoBody todoReq
-	c.Bind(&todoBody)
+    f := func() {
+        // id := c.Param("id")
+        var todoBody todoReq
+        c.Bind(&todoBody)
 
-	var todo models.Todo
+        userID := getUserID(c)
+        var todo models.Todo
 
-	result := initializers.DB.Where("user_id = ?", todoBody.User).Delete(&todo, "id = ?", todoBody.ID)
+        result := initializers.DB.Where("user_id = ?", userID).Delete(&todo, "id = ?", todoBody.ID)
 
-	// current version returns 200 with empty request body, change later
-	if result.Error != nil {
-		c.Status(400)
-		return
-	} else {
-		c.Status(200)
-	}
+        // current version returns 200 with empty request body, change later
+        if result.Error != nil {
+            c.Status(400)
+            return
+        } else {
+            c.Status(200)
+        }
+    }
+    checkForCookie(c, f)
 }
 
 func Register(c *gin.Context) {
@@ -185,6 +196,7 @@ func Login(c *gin.Context) {
     expiresAt := time.Now().Add(120 * time.Second)
 
     sessions[sessionToken] = session{
+        User: user.ID,
         Email: userBody.Email,
         expiry: expiresAt,
     }
@@ -194,7 +206,9 @@ func Login(c *gin.Context) {
         Value: sessionToken,
         Expires: expiresAt,
     })
-    log.Println(sessions)
+    for _, el := range sessions {
+        log.Printf("%+v\n", el)
+    }
     // END NEW!
 
 	c.JSON(200, gin.H{
@@ -293,59 +307,67 @@ func Logout(c *gin.Context) {
 }
 
 func UpdateTodo(c *gin.Context) {
-	// id := c.Param("id")
-	var todoBody todoReq
-	c.Bind(&todoBody)
+    f := func() {
+        // id := c.Param("id")
+        var todoBody todoReq
+        c.Bind(&todoBody)
 
-	var todo models.Todo
+        userID := getUserID(c)
+        var todo models.Todo
 
-	result := initializers.DB.Where("user_id = ?", todoBody.User).First(&todo, "id = ?", todoBody.ID)
-	if result.Error != nil {
-		c.Status(400)
-		return
-	} else {
-		if todo.Status == false {
-			initializers.DB.Model(&todo).Update("status", true)
-		} else {
-			initializers.DB.Model(&todo).Update("status", false)
-		}
+        result := initializers.DB.Where("user_id = ?", userID).First(&todo, "id = ?", todoBody.ID)
+        if result.Error != nil {
+            c.Status(400)
+            return
+        } else {
+            if todo.Status == false {
+                initializers.DB.Model(&todo).Update("status", true)
+            } else {
+                initializers.DB.Model(&todo).Update("status", false)
+            }
 
-		c.JSON(200, gin.H{
-			"todo": todo,
-		})
-	}
+            c.JSON(200, gin.H{
+                "todo": todo,
+            })
+        }
+    }
+    checkForCookie(c, f)
 }
 
 func UpdateUser(c *gin.Context) {
-	var userBody userReq
-	c.Bind(&userBody)
-	pw := encrypt(userBody.NewPassword)
+    f := func() {
+        var userBody userReq
+        c.Bind(&userBody)
+        pw := encrypt(userBody.NewPassword)
 
-	var user models.User
-	result := initializers.DB.First(&user, "id = ?", userBody.User)
+        userID := getUserID(c)
+        var user models.User
+        result := initializers.DB.First(&user, "id = ?", userID)
 
-	/* info, err := json.MarshalIndent(user, "\t", "")
-	   if err != nil {
-	       log.Println(err)
-	   }
-	   fmt.Println(string(info[:])) */
-	match := checkPasswordHash(userBody.Password, user.Password)
-	log.Println(match)
+        /* info, err := json.MarshalIndent(user, "\t", "")
+        if err != nil {
+            log.Println(err)
+        }
+        fmt.Println(string(info[:])) */
+        match := checkPasswordHash(userBody.Password, user.Password)
+        log.Println(match)
 
-	if result.Error != nil { // NEVER FORGET .ERROR AFTER RESULT !!! I REPEAT, NEVER EVER FORGET .ERROR !!!
-		c.Status(400)
-		return
-	} else {
-		if len(userBody.NewPassword) > 0 {
-			initializers.DB.Model(&user).Update("password", pw)
-		}
-		if len(userBody.NewEmail) > 0 {
-			initializers.DB.Model(&user).Update("email", userBody.NewEmail)
-		}
-		c.JSON(200, gin.H{
-			"user": user,
-		})
-	}
+        if result.Error != nil { // NEVER FORGET .ERROR AFTER RESULT !!! I REPEAT, NEVER EVER FORGET .ERROR !!!
+            c.Status(400)
+            return
+        } else {
+            if len(userBody.NewPassword) > 0 {
+                initializers.DB.Model(&user).Update("password", pw)
+            }
+            if len(userBody.NewEmail) > 0 {
+                initializers.DB.Model(&user).Update("email", userBody.NewEmail)
+            }
+            c.JSON(200, gin.H{
+                "user": user,
+            })
+        }
+    }
+    checkForCookie(c, f)
 }
 
 func encrypt(str string) string {
