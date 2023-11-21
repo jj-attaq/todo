@@ -15,7 +15,7 @@ import (
 
 // https://www.sohamkamani.com/golang/session-cookie-authentication/#overview
 
-type session struct {
+/* type session struct {
     User uuid.UUID
     Email string
     expiry time.Time
@@ -25,7 +25,7 @@ var sessions = map[string]session{}
 
 func (s session) isExpired() bool {
     return s.expiry.Before(time.Now())
-}
+} */
 
 
 type todoReq struct {
@@ -42,7 +42,7 @@ type userReq struct {
 	Password    string    // User
 	NewPassword string    // User
 }
-
+/*
 func AddTodo(c *gin.Context) {
     f := func() {
         var todoBody todoReq
@@ -71,22 +71,22 @@ func AddTodo(c *gin.Context) {
     }
     checkForCookie(c, f)
 }
-
-func GetAllTodos(c *gin.Context) {
+*/
+/* func GetAllTodos(c *gin.Context) {
     f := func() {
-        /* // Doesn't work if it's a GET request, requires POST
-           var body struct {
-               User uuid.UUID
-           }
-           c.Bind(&body)
-           log.Printf("This is the userID input into Postman: %v\n", body.User) */
+        // // Doesn't work if it's a GET request, requires POST
+        //    var body struct {
+        //        User uuid.UUID
+        //    }
+        //    c.Bind(&body)
+        //    log.Printf("This is the userID input into Postman: %v\n", body.User)
 
         uid := getUserID(c)
         // userID := c.Param("UserID")
 
-        /* log.Printf("This is the userID input into Postman: %v\n", userID)
-        Get todos
-        result := initializers.DB.Find(&todos) // ALL todos regardless of user */
+        // log.Printf("This is the userID input into Postman: %v\n", userID)
+        // Get todos
+        // result := initializers.DB.Find(&todos) // ALL todos regardless of user
 
         var user models.User
         // initializers.DB.Where("id = ?", uid).Find(&user) // nol  longer necessary due to getUserId()
@@ -109,8 +109,8 @@ func GetAllTodos(c *gin.Context) {
         })
     }
     checkForCookie(c, f)
-}
-
+} */
+/*
 func GetTodo(c *gin.Context) {
     f := func() {
         // Get id off url
@@ -131,8 +131,8 @@ func GetTodo(c *gin.Context) {
         })
     }
     checkForCookie(c, f)
-}
-
+} */
+/*
 func DeleteTodo(c *gin.Context) {
     f := func() {
         // id := c.Param("id")
@@ -154,7 +154,7 @@ func DeleteTodo(c *gin.Context) {
     }
     checkForCookie(c, f)
 }
-
+*/
 func Register(c *gin.Context) {
 	var userBody userReq
 	c.Bind(&userBody)
@@ -171,6 +171,13 @@ func Register(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"user": user,
 	})
+}
+func mkSession(user uuid.UUID, email string, expiresAt time.Time) models.Session {
+    return models.Session{
+        UserID: user,
+        Email: email,
+        Expiry: expiresAt,
+    }
 }
 
 func Login(c *gin.Context) {
@@ -192,23 +199,33 @@ func Login(c *gin.Context) {
 	}
 
     // NEW!
-    sessionToken := uuid.NewString()
     expiresAt := time.Now().Add(120 * time.Second)
-
-    sessions[sessionToken] = session{
-        User: user.ID,
-        Email: userBody.Email,
-        expiry: expiresAt,
+    var session models.Session
+    
+    session = mkSession(user.ID, userBody.Email, expiresAt)
+    userHasCookie := initializers.DB.First(&session, "user_id = ?", user.ID)
+    log.Printf("Bind existing session in DB to session var: %+v\n", session.ID)
+    if userHasCookie.Error == nil {
+        initializers.DB.Delete(&session, "user_id = ?", user.ID)
     }
+    log.Printf("Session after deleting cookie in DB: %+v\n", session.ID)
+    session = mkSession(user.ID, userBody.Email, expiresAt)
+    sessionToken := uuid.New()
+    session.ID = sessionToken
+    // Sessions in DB
+    initializers.DB.Create(&session)
+    log.Printf("Session after creating new one in DB: %+v\n", session.ID)
+
+
+
+    //check if already logged in with checkForCookie()
+
 
     http.SetCookie(c.Writer, &http.Cookie{
         Name: "session_token",
-        Value: sessionToken,
+        Value: sessionToken.String(),
         Expires: expiresAt,
     })
-    for _, el := range sessions {
-        log.Printf("%+v\n", el)
-    }
     // END NEW!
 
 	c.JSON(200, gin.H{
@@ -217,7 +234,31 @@ func Login(c *gin.Context) {
 	})
 }
 
-func Welcome(c *gin.Context) {
+// func CreateCookie(c *gin.Context) {
+//
+//     sessionToken := uuid.NewString()
+//     expiresAt := time.Now().Add(120 * time.Second)
+//
+//     var session = models.Session{
+//         UserID: user.ID,
+//         Email: userBody.Email,
+//         Expiry: expiresAt,
+//     }
+//
+// 	result := initializers.DB.Create(&session)
+// 	if result.Error != nil {
+// 		c.Status(400)
+// 		return
+// 	}
+//
+//     http.SetCookie(c.Writer, &http.Cookie{
+//         Name: "session_token",
+//         Value: sessionToken,
+//         Expires: expiresAt,
+//     })
+// }
+//
+/* func Welcome(c *gin.Context) {
     cookie, err := c.Request.Cookie("session_token")
     if err != nil {
         if err == http.ErrNoCookie {
@@ -305,8 +346,8 @@ func Logout(c *gin.Context) {
         Expires: time.Now(),
     })
 }
-
-func UpdateTodo(c *gin.Context) {
+*/
+/* func UpdateTodo(c *gin.Context) {
     f := func() {
         // id := c.Param("id")
         var todoBody todoReq
@@ -344,11 +385,11 @@ func UpdateUser(c *gin.Context) {
         var user models.User
         result := initializers.DB.First(&user, "id = ?", userID)
 
-        /* info, err := json.MarshalIndent(user, "\t", "")
-        if err != nil {
-            log.Println(err)
-        }
-        fmt.Println(string(info[:])) */
+        // info, err := json.MarshalIndent(user, "\t", "")
+        // if err != nil {
+        //     log.Println(err)
+        // }
+        // fmt.Println(string(info[:]))
         match := checkPasswordHash(userBody.Password, user.Password)
         log.Println(match)
 
@@ -368,7 +409,7 @@ func UpdateUser(c *gin.Context) {
         }
     }
     checkForCookie(c, f)
-}
+} */
 
 func encrypt(str string) string {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(str), 8)
@@ -383,7 +424,7 @@ func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-
+/*
 func checkForCookie(c *gin.Context, d func()) {
     cookie, err := c.Request.Cookie("session_token")
     if err != nil {
@@ -432,4 +473,4 @@ func getUserID(c *gin.Context) uuid.UUID {
     log.Printf("getUserId: %v\n", uid)
     return uid
 }
-
+*/

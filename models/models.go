@@ -35,6 +35,17 @@ type User struct {
 	Todos     []Todo         // `gorm:"foreignKey:UserID,constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 }
 
-/* func ValidateUser(u *User) bool {
-    return true
-} */
+type Session struct {
+	ID        uuid.UUID `gorm:"primary_key; unique; type:uuid; column:id; "` //default:uuid_generate_v4()"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+    DeletedAt gorm.DeletedAt `gorm:"index"`
+    //
+    UserID uuid.UUID //`gorm:"unique;"`
+    Email string
+    Expiry time.Time
+}
+
+func (s Session) IsExpired() bool {
+    return s.Expiry.Before(time.Now())
+}
