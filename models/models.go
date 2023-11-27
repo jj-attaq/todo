@@ -33,6 +33,7 @@ type User struct {
 	Email     string         `gorm:"unique" json:"email" binding:"required,email"`
 	Password  string         `json:"-" binding:"required,gte=6,lte=30"`
 	Todos     []Todo         // `gorm:"foreignKey:UserID,constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
+    //LoggedIn bool
 }
 
 type Session struct {

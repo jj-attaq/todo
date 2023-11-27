@@ -29,12 +29,12 @@ func main() {
 	// Handlers
     router := gin.Default()
     // Task management handlers
-	// router.GET("/todos", commands.GetAllTodos) // might need to make POST because of user spec in json body, or use GET with :UserID in GET call
-	// router.GET("/todos/:id", commands.GetTodo)
-	// router.POST("/addTodo", commands.AddTodo) // UserID in json body
-	// router.PUT("/updateTodo", commands.UpdateTodo)
-	// router.PUT("/updateUser", commands.UpdateUser)
-	// router.DELETE("/deleteTodo", commands.DeleteTodo)
+	router.GET("/todos", commands.GetAllTodos) // might need to make POST because of user spec in json body, or use GET with :UserID in GET call
+	router.GET("/todos/:id", commands.GetTodo)
+	router.POST("/addTodo", commands.AddTodo) // UserID in json body
+	router.PUT("/updateTodo", commands.UpdateTodo)
+	router.PUT("/updateUser", commands.UpdateUser)
+	router.DELETE("/deleteTodo", commands.DeleteTodo)
     // Auth handlers
     router.POST("/register", commands.Register)
     router.POST("/login", commands.Login)
