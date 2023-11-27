@@ -41,7 +41,7 @@ type Session struct {
 	UpdatedAt time.Time
     DeletedAt gorm.DeletedAt `gorm:"index"`
     //
-    UserID uuid.UUID //`gorm:"unique;"`
+    UserID uuid.UUID // partial index at ../migrate/migrate.go var sessionPartial // allows for soft delete
     Email string
     Expiry time.Time
 }

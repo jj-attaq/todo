@@ -22,6 +22,9 @@ func init() {
 
 func main() {
 	fmt.Println("Starting server...")
+    // commands.Test("this", "is", "a", "test")
+    // commands.Test("1", "2", "3", "4")
+    // commands.Test("Status Code", "")
 
 	// Handlers
     router := gin.Default()
@@ -35,9 +38,9 @@ func main() {
     // Auth handlers
     router.POST("/register", commands.Register)
     router.POST("/login", commands.Login)
-    // router.GET("/welcome", commands.Welcome)
-    // router.POST("/refresh", commands.Refresh)
-    // router.GET("/logout", commands.Logout)
+    router.GET("/welcome", commands.Welcome)
+    router.POST("/refresh", commands.Refresh)
+    router.GET("/logout", commands.Logout)
 
 	// Graceful shutdown
 	port := os.Getenv("PORT")

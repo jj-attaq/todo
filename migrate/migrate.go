@@ -12,7 +12,10 @@ func init() {
 
 func main() {
     // RAW SQL FOR PARTIAL INDEXING // NEED FOR SOFT DELETION OF UNIQUE IDs
-    initializers.DB.Exec("CREATE UNIQUE INDEX \"sessions_user_id_unique\" ON sessions(user_id, deleted_at) WHERE deleted_at IS NULL;")
+    sessionPartial := initializers.DB.Exec("CREATE UNIQUE INDEX \"sessions_user_id_unique\" ON sessions(user_id, deleted_at) WHERE deleted_at IS NULL;")
+    if sessionPartial.Error != nil {
+        panic(sessionPartial.Error)
+    }
     // change for final version
 	if initializers.DB.Migrator().HasTable(&models.Todo{}) {
 		initializers.DB.Migrator().DropTable(&models.Todo{})

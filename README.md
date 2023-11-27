@@ -28,7 +28,7 @@ https://www.youtube.com/watch?v=EqniGcAijDI
     - Role-based access (e.g., admin, user).
 
     b. Persistence:
-    - Integrate a relational database like PostgreSQL or SQLite.
+    X Integrate a relational database like PostgreSQL or SQLite.
     X Use an ORM (Object-Relational Mapping) tool like GORM.
 
     c. Middleware:
@@ -37,7 +37,7 @@ https://www.youtube.com/watch?v=EqniGcAijDI
     - CORS (Cross-Origin Resource Sharing) settings.
 
     d. Validation & Error Handling:
-    - Input validation for task data.
+    - Input validation for task data. // https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html
     - Consistent error response structure.
 
 3. Advanced Features:
