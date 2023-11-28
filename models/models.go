@@ -37,7 +37,7 @@ type User struct {
 }
 
 type Session struct {
-	ID        uuid.UUID `gorm:"primary_key; unique; type:uuid; column:id; "` //default:uuid_generate_v4()"`
+	ID        uuid.UUID `gorm:"primary_key; unique; type:uuid; column:id; "` //default:uuid_generate_v4()"` // TOO LONG FOR bcrypt package to encrypt, 72 bits max!!! 
 	CreatedAt time.Time
 	UpdatedAt time.Time
     DeletedAt gorm.DeletedAt `gorm:"index"`
