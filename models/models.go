@@ -31,7 +31,7 @@ type User struct {
 	Role      string         `json:"role"`
 	Username  string         `gorm:"unique" json:"userName"`
 	Email     string         `gorm:"unique" json:"email" binding:"required,email"`
-	Password  string         `json:"-" binding:"required,gte=6,lte=30"`
+	Password  string         `json:"-" binding:"required,gte=6,lte=30"` // not working. pw can be 4 letters long atm.
 	Todos     []Todo         // `gorm:"foreignKey:UserID,constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
     //LoggedIn bool
 }

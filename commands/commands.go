@@ -16,18 +16,18 @@ import (
 // https://www.sohamkamani.com/golang/session-cookie-authentication/#overview
 
 type todoReq struct {
-	ID    uuid.UUID // Todo
-	Title string    // Todo
-	Body  string    // Todo
-	User  uuid.UUID // User
+	ID    uuid.UUID 
+	Title string    
+	Body  string    
+	User  uuid.UUID 
 }
 type userReq struct {
-	User        uuid.UUID // User
-	Name        string    // User
-	Email       string    // User
-	NewEmail    string    // User
-	Password    string    // User
-	NewPassword string    // User
+	User        uuid.UUID 
+	Name        string    
+	Email       string    
+	NewEmail    string    
+	Password    string    
+	NewPassword string    
 }
 type jsonMessage struct {
     m map[string]string
@@ -82,7 +82,6 @@ func GetAllTodos(c *gin.Context) {
         // Respond
         c.JSON(200, gin.H{
             "user": user.Todos,
-            // "todos": todos,
         })
     }
 }
