@@ -22,10 +22,6 @@ func init() {
 
 func main() {
 	fmt.Println("Starting server...")
-    // commands.Test("this", "is", "a", "test")
-    // commands.Test("1", "2", "3", "4")
-    // commands.Test("Status Code", "")
-
 	// Handlers
     router := gin.Default()
     // Task management handlers

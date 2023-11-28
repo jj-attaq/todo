@@ -23,8 +23,8 @@ https://www.youtube.com/watch?v=EqniGcAijDI
 2. Intermediate Features:
 
     a. User Authentication & Authorization:
-    - Sign up & login functionalities. <!-- sorta kinda  -->
-    - JWT or cookie-based sessions.
+    X Sign up & login functionalities.
+    X JWT or cookie-based sessions.
     - Role-based access (e.g., admin, user).
 
     b. Persistence:

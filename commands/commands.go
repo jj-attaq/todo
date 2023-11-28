@@ -81,22 +81,7 @@ func GetAllTodos(c *gin.Context) {
         jsonFactory(c, 401, user, cookie.ID)
         return
     } else {
-        // userID := c.Param("UserID")
-
-        // log.Printf("This is the userID input into Postman: %v\n", userID)
-        // Get todos
-        // result := initializers.DB.Find(&todos) // ALL todos regardless of user
-
-        // var user models.User
-        // initializers.DB.Where("id = ?", uid).Find(&user) // nol  longer necessary due to getUserId()
         result := initializers.DB.Where("user_id = ?", user.ID).Find(&user.Todos)
-        // func() {
-        //     log.Println("User's todos:")
-        //     for _, el := range user.Todos {
-        //         log.Printf("%+v %+v\n", el.UserID, el.Title)
-        //     }
-        // }()
-
         if result.Error != nil {
             c.Status(400)
             return
@@ -130,9 +115,6 @@ func GetTodo(c *gin.Context) {
             "todo": todo,
         })
     }
-    // Get id off url
-    // userID := c.Param("UserID")
-    // Get todo
 }
 
 func DeleteTodo(c *gin.Context) {
@@ -493,7 +475,7 @@ func getUser(c *gin.Context) models.User {
     }
 
 	var user models.User
-	initializers.DB.First(&user, "email = ?", cookie.Email)
+	initializers.DB.First(&user, "email = ?", cookie.Email) // get rid of cookie.Email
 
     log.Printf("getUserId: %v\n", user.ID)
     return user
