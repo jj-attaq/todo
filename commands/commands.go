@@ -202,10 +202,14 @@ func Login(c *gin.Context) {
 	result := initializers.DB.First(&user, "email = ?", email)
 
 	match := checkPasswordHash(userBody.Password, user.Password)
-	if (result.Error != nil) || (!match) {
-		c.Status(400)
+	if (result.Error != nil) {
+		c.Status(400) // maybe different code
 		return
 	}
+    if !match {
+        c.Status(401)
+		return
+    }
 
     // NEW!
     expiresAt := time.Now().Add(120 * time.Second)
@@ -403,18 +407,11 @@ func UpdateUser(c *gin.Context) {
         c.Bind(&userBody)
         pw := encrypt(userBody.NewPassword)
 
-        result := initializers.DB.First(&user, "id = ?", user.ID)
-
-        // info, err := json.MarshalIndent(user, "\t", "")
-        // if err != nil {
-        //     log.Println(err)
-        // }
-        // fmt.Println(string(info[:]))
         match := checkPasswordHash(userBody.Password, user.Password)
         log.Println(match)
 
-        if result.Error != nil { // NEVER FORGET .ERROR AFTER RESULT !!! I REPEAT, NEVER EVER FORGET .ERROR !!!
-            c.Status(400)
+        if !match {
+            c.Status(401)
             return
         } else {
             if len(userBody.NewPassword) > 0 {
@@ -444,7 +441,7 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func checkForCookie(c *gin.Context /*, d func()*/) (models.Session, error){
+func checkForCookie(c *gin.Context) (models.Session, error) {
     var session models.Session
 
     cookie, err := c.Request.Cookie("session_token")
@@ -467,7 +464,7 @@ func checkForCookie(c *gin.Context /*, d func()*/) (models.Session, error){
     }
     
     if session.IsExpired() {
-        initializers.DB.Delete(&session, "user_id = ?", session.UserID)
+        initializers.DB.Delete(&session, "id = ?", session.ID)
         // maybe?
         session = models.Session{}
         c.Status(401)
