@@ -47,6 +47,23 @@ type Session struct {
     Expiry time.Time
 }
 
+type Identifiable interface {
+    // change models above from uuid, and THEN use this interface (after modding output of func) as input for func responsible for encrypting IDs stored on the DB?
+    GetID() uuid.UUID
+}
+
+func (t Todo) GetID() uuid.UUID {
+    return t.ID
+}
+
+func (u User) GetID() uuid.UUID {
+    return u.ID
+}
+
+func (s Session) GetID() uuid.UUID {
+    return s.ID
+}
 func (s Session) IsExpired() bool {
     return s.Expiry.Before(time.Now())
 }
+
