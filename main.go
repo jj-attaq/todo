@@ -59,7 +59,10 @@ func middleWare(next http.Handler) http.Handler {
 func main() {
     // Basic request logging
     gin.DisableConsoleColor()
-    file, _ := os.Create("gin.log")
+    file, err := os.Create("gin.log")
+    if err != nil {
+        log.Panic(err)
+    }
     gin.DefaultWriter = io.MultiWriter(file, os.Stdout)
 
 	fmt.Println("Starting server...")
