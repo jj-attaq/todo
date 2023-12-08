@@ -15,5 +15,4 @@
 [GIN-debug] POST   /refresh                  --> github.com/jj-attaq/todo/commands.Refresh (3 handlers)
 [GIN-debug] PUT    /updateUser               --> github.com/jj-attaq/todo/commands.UpdateUser (3 handlers)
 [GIN-debug] GET    /logout                   --> github.com/jj-attaq/todo/commands.Logout (3 handlers)
-[GIN] 2023/12/07 - 16:54:53 | 200 |  247.940348ms |             ::1 | GET      "/welcome"
-[GIN] 2023/12/07 - 16:54:56 | 200 |  355.025001ms |             ::1 | POST     "/addTodo"
+[GIN] 2023/12/08 - 14:31:43 | 200 |  756.443086ms |             ::1 | POST     "/login"
