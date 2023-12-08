@@ -29,6 +29,14 @@ type userReq struct {
 	Password    string    
 	NewPassword string    
 }
+
+type Request interface {
+    LogReq()
+}
+
+func (r todoReq) LogReq() {
+}
+
 type jsonMessage struct {
     m map[string]string
 }
@@ -155,9 +163,6 @@ func mkSession(user uuid.UUID, email string, expiresAt time.Time) models.Session
         Email: email,
         Expiry: expiresAt,
     }
-}
-
-func RemoveExpiredCookies() { // helper function
 }
 
 func Login(c *gin.Context) {

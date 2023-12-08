@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jj-attaq/todo/commands"
 	"github.com/jj-attaq/todo/initializers"
+	"github.com/rs/cors"
 )
 
 func init() {
@@ -42,19 +43,35 @@ func logKeyAndMap(arr []string){
     log.Printf("End of log entry.\n")
 }
 
+// CORS middleware
 func middleWare(next http.Handler) http.Handler {
+    // Actor - username, uuid, api token
+    // Group - organization, team, account for team admin history
+    // Where - IP address, device ID, country
+    // When - NTP synced server time of the event
+    // Target - object or resource being changed, the 'noun'
+    // Action - the verb, how was the object changed
+    // Action type - C, R, U, or D
+    // Event Name
+    // Description
     return http.HandlerFunc(
         func(w http.ResponseWriter, r *http.Request) {
-            // log.Println(r.Cookies())
-            // if logged in run commands.Refresh handler???
-            next.ServeHTTP(w, r)
-            
-            /* log.Println(r.Method)
-            log.Println(r.Host)
-            logKeyAndMap(formatKeyAndMap(r.Header)) */
+            enCors := cors.Default().Handler(next)
+            // next.ServeHTTP(w, r)
+            enCors.ServeHTTP(w, r)
         },
     )
 }
+
+// https://www.enterpriseready.io/features/audit-log/
+func loggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(
+        func(w http.ResponseWriter, r *http.Request) {
+            next.ServeHTTP(w, r)
+        },
+    )
+}
+
 
 func main() {
     // Basic request logging
@@ -68,7 +85,7 @@ func main() {
 	fmt.Println("Starting server...")
 	// Handlers
     router := gin.Default()
-    // configuredRouter := middleWare(router)
+    configuredRouter := middleWare(router)
 
     // Task management handlers
 	router.GET("/todos", commands.GetAllTodos) // might need to make POST because of user spec in json body, or use GET with :UserID in GET call
@@ -88,7 +105,7 @@ func main() {
 	port := os.Getenv("PORT")
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: router,
+		Handler: configuredRouter, // Was router before
 	}
 
 	go func() {
