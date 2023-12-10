@@ -1,15 +1,16 @@
 package main
 
 import (
-    "text/tabwriter" // for formatting logs into columns: https://blog.el-chavez.me/2019/05/05/golang-tabwriter-aligned-text/
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"text/tabwriter" // for formatting logs into columns: https://blog.el-chavez.me/2019/05/05/golang-tabwriter-aligned-text/
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -53,20 +54,36 @@ func middleWare(next http.Handler) http.Handler {
         },
     )
 }
+func logPrefix(str string, output any, isLog bool) {
+    if isLog {
+        log.Printf(str + ": %v\n", output)
+    } else {
+        fmt.Printf(str + ": %v\n", output)
+    }
+}
 
 // https://www.enterpriseready.io/features/audit-log/
-func loggingMiddleware(next http.Handler) http.Handler {
-    writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+func loggingMiddleware(next http.Handler, file io.Writer) http.Handler {
+    defaultWriter := io.MultiWriter(file, os.Stdout)
+    writer := tabwriter.NewWriter(defaultWriter, 0, 8, 1, '\t', tabwriter.AlignRight)
     return http.HandlerFunc(
         func(w http.ResponseWriter, r *http.Request) {
             next.ServeHTTP(w, r)
             // Actor - username, uuid, api token
             // Group - organization, team, account for team admin history
             // Where - IP address, device ID, country
+            time := time.Now().Add(120 * time.Second)
+            fmt.Fprintln(writer, "Time: ", time)
+            fmt.Fprintln(writer, "Header: ")
+            for key, el := range r.Header {
+                fmt.Fprintln(writer, key + "\t" + strings.Join(el, ""))
+                // fmt.Println("Key: ", key, " => ", el)
+            }
             // When - NTP synced server time of the event
             // Target - object or resource being changed, the 'noun'
             // Action - the verb, how was the object changed
-            log.Printf("Method: %v\n", r.Method)
+            fmt.Fprintf(writer, "\n")
+            fmt.Fprintf(writer, "Method: %v\n", r.Method)
             // Action type - C, R, U, or D
             // Event Name
             // Description
@@ -74,13 +91,10 @@ func loggingMiddleware(next http.Handler) http.Handler {
             // Server
             // Version
             // Protocols
-            log.Printf("Protocol: %v\n", r.Proto)
+            fmt.Fprintf(writer, "Protocol: %v\n", r.Proto)
             // Global Actor ID
             // log.Printf("Header: %v\n", r.Header)
-            for key, el := range r.Header {
-                fmt.Fprintln(writer, key + "\t" + strings.Join(el, ""))
-                // fmt.Println("Key: ", key, " => ", el)
-            }
+            fmt.Fprintln(writer, "--------")
             writer.Flush()
         },
     )
@@ -96,10 +110,18 @@ func main() {
     }
     gin.DefaultWriter = io.MultiWriter(file, os.Stdout) */
 
+    file, err := os.Open("middleWareLog.txt")
+    if err != nil {
+        file, err = os.Create("middleWareLog.txt")
+        log.Println(err)
+    }
+
+    defer file.Close()
+
 	fmt.Println("Starting server...")
 	// Handlers
     router := gin.Default()
-    configuredRouter := loggingMiddleware(middleWare(router))
+    configuredRouter := loggingMiddleware(middleWare(router), file)
 
     // Task management handlers
 	router.GET("/todos", commands.GetAllTodos) // might need to make POST because of user spec in json body, or use GET with :UserID in GET call
