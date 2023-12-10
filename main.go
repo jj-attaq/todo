@@ -72,7 +72,7 @@ func loggingMiddleware(next http.Handler, file io.Writer) http.Handler {
             // Actor - username, uuid, api token
             // Group - organization, team, account for team admin history
             // Where - IP address, device ID, country
-            time := time.Now().Add(120 * time.Second)
+            time := time.Now()
             fmt.Fprintln(writer, "Time: ", time)
             fmt.Fprintln(writer, "Header: ")
             for key, el := range r.Header {
@@ -110,10 +110,9 @@ func main() {
     }
     gin.DefaultWriter = io.MultiWriter(file, os.Stdout) */
 
-    file, err := os.Open("middleWareLog.txt")
+    file, err := os.OpenFile("middleWareLog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
     if err != nil {
-        file, err = os.Create("middleWareLog.txt")
-        log.Println(err)
+        log.Fatal(err)
     }
 
     defer file.Close()
