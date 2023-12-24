@@ -16,157 +16,220 @@ import (
 // https://www.sohamkamani.com/golang/session-cookie-authentication/#overview
 
 type todoReq struct {
-	ID    uuid.UUID 
-	Title string    
-	Body  string    
-	User  uuid.UUID 
+	ID    uuid.UUID
+	Title string
+	Body  string
+	User  uuid.UUID
 }
 type userReq struct {
-	User        uuid.UUID 
-	Name        string    
-	Email       string    
-	NewEmail    string    
-	Password    string    
-	NewPassword string    
+	User        uuid.UUID
+	Name        string
+    TeamName string
+	Email       string
+	NewEmail    string
+	Password    string
+	NewPassword string
+    Role string
+    Team uuid.UUID
 }
 
 type Request interface {
-    LogReq()
+	LogReq()
 }
 
 func (r todoReq) LogReq() {
 }
 
 type jsonMessage struct {
-    m map[string]string
+	m map[string]string
 }
 
 func AddTodo(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    } else {
-        var todoBody todoReq
-        c.Bind(&todoBody)
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		var todoBody todoReq
+		c.Bind(&todoBody)
 
-        uid, err := c.Cookie("session_token")
-        if err != nil {
-            panic(err)
-        }
+		uid, err := c.Cookie("session_token")
+		if err != nil {
+			panic(err)
+		}
 
-        log.Printf("UID: %+v", uid)
+		log.Printf("UID: %+v", uid)
 
-        todo := models.Todo{UserID: user.ID, Title: todoBody.Title, Description: todoBody.Body}
-        result := initializers.DB.Create(&todo)
-        if result.Error != nil {
-            c.Status(400)
-            return
-        }
-        c.JSON(200, gin.H{
-            "todo": todo,
-        })
-    }
+		todo := models.Todo{UserID: user.ID, Title: todoBody.Title, Description: todoBody.Body}
+		result := initializers.DB.Create(&todo)
+		if result.Error != nil {
+			c.Status(400)
+			return
+		}
+		c.JSON(200, gin.H{
+			"todo": todo,
+		})
+	}
 }
 
 func GetAllTodos(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    }
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    } else {
-        result := initializers.DB.Where("user_id = ?", user.ID).Find(&user.Todos)
-        if result.Error != nil {
-            c.Status(400)
-            return
-        }
-        // Respond
-        c.JSON(200, gin.H{
-            "user": user.Todos,
-        })
-    }
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	}
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		result := initializers.DB.Where("user_id = ?", user.ID).Find(&user.Todos)
+		if result.Error != nil {
+			c.Status(400)
+			return
+		}
+		// Respond
+		c.JSON(200, gin.H{
+			"user": user.Todos,
+		})
+	}
 }
 
 func GetTodo(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    } else {
-        id := c.Param("id")
-        var todo models.Todo
-        result := initializers.DB.Where("user_id = ?", user.ID).First(&todo, "id = ?", id)
-        if result.Error != nil {
-            c.Status(400)
-            return
-        }
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		id := c.Param("id")
+		var todo models.Todo
+		result := initializers.DB.Where("user_id = ?", user.ID).First(&todo, "id = ?", id)
+		if result.Error != nil {
+			c.Status(400)
+			return
+		}
 
-        //Respond
-        c.JSON(200, gin.H{
-            "todo": todo,
-        })
-    }
+		//Respond
+		c.JSON(200, gin.H{
+			"todo": todo,
+		})
+	}
 }
 
 func DeleteTodo(c *gin.Context) {
-    user, cookie, err := getUser(c)
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		var todoBody todoReq
+		c.Bind(&todoBody)
+
+		var todo models.Todo
+
+		result := initializers.DB.Where("user_id = ?", user.ID).Delete(&todo, "id = ?", todoBody.ID)
+
+		// current version returns 200 with empty request body, change later
+		if result.Error != nil {
+			c.Status(400)
+			return
+		} else {
+			c.Status(200)
+		}
+	}
+}
+
+func getPermissions(c *gin.Context) (models.Permissions, error){
+    var perm models.Permissions
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return perm, errors.New("Session token not found.")
+	} 
+
+    initializers.DB.First(&perm, "id = ?", user.ID)
+    return perm, nil
+}
+
+func CreateTeam(c *gin.Context) {
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} 
+    perm, err := getPermissions(c)
     if err != nil {
         log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
+    }
+    if !perm.TeamCreate {
+        c.Status(400)
+        jsonFactory(c, 400, user, cookie.ID, "error", "User does not have permission for this operation")
         return
     } else {
-        var todoBody todoReq
-        c.Bind(&todoBody)
-
-        var todo models.Todo
-
-        result := initializers.DB.Where("user_id = ?", user.ID).Delete(&todo, "id = ?", todoBody.ID)
-
-        // current version returns 200 with empty request body, change later
+        var userBody userReq
+        c.Bind(&userBody)
+        team := models.Team{TeamName: userBody.TeamName}
+        result := initializers.DB.Create(&team)
         if result.Error != nil {
             c.Status(400)
             return
-        } else {
-            c.Status(200)
         }
+
+        c.JSON(200, gin.H{
+            "team": team,
+        })
     }
 }
 
 func Register(c *gin.Context) {
 	var userBody userReq
 	c.Bind(&userBody)
-
 	pw := encrypt(userBody.Password)
 	userBody.Password = pw
-	user := models.User{Username: userBody.Name, Email: userBody.Email, Password: userBody.Password}
+    // Front end needs choice of available teams
+	user := models.User{Username: userBody.Name, Email: userBody.Email, Password: userBody.Password, Role: userBody.Role, Team: userBody.Team}
+
+    var perm models.Permissions 
+
+    if user.Role == "Admin" {
+        p := user.MkAdmin()
+        perm = p.Permissions
+    } else if user.Role == "TeamLead" {
+        p := user.MkTeamLead()
+        perm = p.Permissions
+    } else {
+        p := user.MkMember()
+        perm = p.Permissions
+    }
 
 	result := initializers.DB.Create(&user)
 	if result.Error != nil {
 		c.Status(400)
 		return
 	}
+    perm.ID = user.ID
+    initializers.DB.Create(&perm)
 	c.JSON(200, gin.H{
 		"user": user,
 	})
 }
+
 func mkSession(user uuid.UUID, email string, expiresAt time.Time) models.Session {
-    return models.Session{
-        UserID: user,
-        Email: email,
-        Expiry: expiresAt,
-    }
+	return models.Session{
+		UserID: user,
+		Email:  email,
+		Expiry: expiresAt,
+	}
 }
 
 func Login(c *gin.Context) {
-    // https://www.sohamkamani.com/golang/password-authentication-and-storage/
+	// https://www.sohamkamani.com/golang/password-authentication-and-storage/
 
 	// must be a better way to do this, check out gin.Accounts?
 	var userBody userReq
@@ -178,214 +241,211 @@ func Login(c *gin.Context) {
 	result := initializers.DB.First(&user, "email = ?", email)
 
 	match := checkPasswordHash(userBody.Password, user.Password)
-	if (result.Error != nil) {
+	if result.Error != nil {
 		c.Status(400) // maybe different code
 		return
 	}
-    if !match {
-        c.Status(401)
+	if !match {
+		c.Status(401)
 		return
-    }
+	}
 
-    // NEW!
-    expiresAt := time.Now().Add(120 * time.Second)
+	expiresAt := time.Now().Add(120 * time.Second)
 
-    var session models.Session
-    session = mkSession(user.ID, userBody.Email, expiresAt)
+	var session models.Session
+	session = mkSession(user.ID, userBody.Email, expiresAt)
 
-    userHasCookie := initializers.DB.First(&session, "user_id = ?", user.ID)
-    log.Printf("Bind existing session in DB to session var: %+v\n", session.ID)
+	userHasCookie := initializers.DB.First(&session, "user_id = ?", user.ID)
+	log.Printf("Bind existing session in DB to session var: %+v\n", session.ID)
 
-    mkCookie := func() {
-        session = mkSession(user.ID, userBody.Email, expiresAt)
-        sessionToken := uuid.New()
-        session.ID = sessionToken
-        // Sessions in DB
-        initializers.DB.Create(&session)
-        log.Printf("Session after creating new one in DB: %+v\n", session.ID)
+	mkCookie := func() {
+		session = mkSession(user.ID, userBody.Email, expiresAt)
+		sessionToken := uuid.New()
+		session.ID = sessionToken
+		// Sessions in DB
+		initializers.DB.Create(&session)
+		log.Printf("Session after creating new one in DB: %+v\n", session.ID)
 
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:    "session_token",
+			Value:   session.ID.String(),
+			Expires: expiresAt,
+		})
+	}
 
-        http.SetCookie(c.Writer, &http.Cookie{
-            Name: "session_token",
-            Value: session.ID.String(),
-            Expires: expiresAt,
-        })
-        // END NEW!
-    }
-
-    if userHasCookie.Error == nil && session.IsExpired() == false {
-        jsonFactory(c, 406, user, session.ID,"Hey there!", "You are already logged in!", "I'm hungry", "Me too!")
-    } else if userHasCookie.Error == nil || session.IsExpired() == true {
-        initializers.DB.Delete(&session, "user_id = ?", user.ID)
-        mkCookie()
-        log.Printf("Session after deleting cookie in DB: %+v\n", session.ID)
-        jsonFactory(c, 200, user, session.ID)
-    } else if userHasCookie.Error != nil {
-        mkCookie()
-        log.Printf("No previous unexpired session: %+v\n", session.ID)
-        jsonFactory(c, 200, user, session.ID, "welcome", "Welcome " + user.Username + "!")
-    }
+	if userHasCookie.Error == nil && session.IsExpired() == false {
+		jsonFactory(c, 406, user, session.ID, "Hey there!", "You are already logged in!")
+	} else if userHasCookie.Error == nil || session.IsExpired() == true {
+		initializers.DB.Delete(&session, "user_id = ?", user.ID)
+		mkCookie()
+		log.Printf("Session after deleting cookie in DB: %+v\n", session.ID)
+		jsonFactory(c, 200, user, session.ID)
+	} else if userHasCookie.Error != nil {
+		mkCookie()
+		log.Printf("No previous unexpired session: %+v\n", session.ID)
+		jsonFactory(c, 200, user, session.ID, "welcome", "Welcome "+user.Username+"!")
+	}
 }
 
 func jsonFactory(c *gin.Context, code int, user models.User, token uuid.UUID, messages ...string) { // even messages (0 index) are the field name, odd are the actual message
-    mess := new(jsonMessage)
-    mess.m = make(map[string]string)
-    var temp string
-    for i, el := range messages {
-        if i % 2 == 0 {
-            temp = el
-        } 
-        if i % 2 != 0 {
-            mess.m[temp] = el
-        }
-    }
-    c.JSON(code, gin.H{
-        "user": user,
-        "token": token,
-        "status code": code,
-        "messages": mess.m,
-    })
+	mess := new(jsonMessage)
+	mess.m = make(map[string]string)
+	var temp string
+	for i, el := range messages {
+		if i%2 == 0 {
+			temp = el
+		}
+		if i%2 != 0 {
+			mess.m[temp] = el
+		}
+	}
+	c.JSON(code, gin.H{
+		"user":        user,
+		"token":       token,
+		"status code": code,
+		"messages":    mess.m,
+	})
 }
 
 func Welcome(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    }
-    
-    // SENDS 200 even when not logged in!!!
-    if cookie.Email == "" {
-        c.Status(400)
-        return
-    } else {
-        c.JSON(200, gin.H{
-            "welcome": cookie.Email,
-        })
-    }
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	}
+
+	// SENDS 200 even when not logged in!!!
+	if cookie.Email == "" {
+		c.Status(400)
+		return
+	} else {
+		c.JSON(200, gin.H{
+			"welcome": cookie.Email,
+		})
+	}
 }
 
 func Refresh(c *gin.Context) {
-    var oldSession models.Session
-    var newSession models.Session
+	var oldSession models.Session
+	var newSession models.Session
 
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    }
-    
-    remove := initializers.DB.Delete(&oldSession, "user_id = ?", user.ID)
-    if cookie.IsExpired() {
-        if remove.Error != nil {
-            log.Println(remove.Error)
-        }
-        c.Status(401)
-        return
-    }
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	}
 
-    if cookie.IsExpired() == false {
-        newSessionToken := uuid.New()
-        expiresAt := time.Now().Add(120 * time.Second)
-        newSession = mkSession(user.ID, user.Email, expiresAt)
-        newSession.ID = newSessionToken
-        // Sessions in DB
-        initializers.DB.Create(&newSession)
+	remove := initializers.DB.Delete(&oldSession, "user_id = ?", user.ID)
+	if cookie.IsExpired() {
+		if remove.Error != nil {
+			log.Println(remove.Error)
+		}
+		c.Status(401)
+		return
+	}
 
-        if remove.Error != nil {
-            log.Println(remove.Error)
-        }
+	if cookie.IsExpired() == false {
+		newSessionToken := uuid.New()
+		expiresAt := time.Now().Add(120 * time.Second)
+		newSession = mkSession(user.ID, user.Email, expiresAt)
+		newSession.ID = newSessionToken
+		// Sessions in DB
+		initializers.DB.Create(&newSession)
 
-        http.SetCookie(c.Writer, &http.Cookie{
-            Name: "session_token",
-            Value: newSessionToken.String(),
-            Expires: expiresAt,
-        })
-    }
+		if remove.Error != nil {
+			log.Println(remove.Error)
+		}
+
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:    "session_token",
+			Value:   newSessionToken.String(),
+			Expires: expiresAt,
+		})
+	}
 }
 
 func Logout(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    }
-    var session models.Session
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	}
+	var session models.Session
 
-    remove := initializers.DB.Delete(&session, "user_id = ?", user.ID)
-    if remove.Error != nil {
-        log.Println(remove.Error)
-    }
+	remove := initializers.DB.Delete(&session, "user_id = ?", user.ID)
+	if remove.Error != nil {
+		log.Println(remove.Error)
+	}
 
-    http.SetCookie(c.Writer, &http.Cookie{
-        Name: "session_token",
-        Value: "",
-        Expires: time.Now(),
-    })
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:    "session_token",
+		Value:   "",
+		Expires: time.Now(),
+	})
 }
 
 func UpdateTodo(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    } else {
-        var todoBody todoReq
-        c.Bind(&todoBody)
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		var todoBody todoReq
+		c.Bind(&todoBody)
 
-        var todo models.Todo
+		var todo models.Todo
 
-        result := initializers.DB.Where("user_id = ?", user.ID).First(&todo, "id = ?", todoBody.ID)
-        if result.Error != nil {
-            c.Status(400)
-            return
-        } else {
-            if todo.Status == false {
-                initializers.DB.Model(&todo).Update("status", true)
-            } else {
-                initializers.DB.Model(&todo).Update("status", false)
-            }
+		result := initializers.DB.Where("user_id = ?", user.ID).First(&todo, "id = ?", todoBody.ID)
+		if result.Error != nil {
+			c.Status(400)
+			return
+		} else {
+			if todo.Status == false {
+				initializers.DB.Model(&todo).Update("status", true)
+			} else {
+				initializers.DB.Model(&todo).Update("status", false)
+			}
 
-            c.JSON(200, gin.H{
-                "todo": todo,
-            })
-        }
-    }
+			c.JSON(200, gin.H{
+				"todo": todo,
+			})
+		}
+	}
 }
 
 func UpdateUser(c *gin.Context) {
-    user, cookie, err := getUser(c)
-    if err != nil {
-        log.Println(err)
-        jsonFactory(c, 401, user, cookie.ID)
-        return
-    } else {
-        var userBody userReq
-        c.Bind(&userBody)
-        pw := encrypt(userBody.NewPassword)
+	user, cookie, err := getUser(c)
+	if err != nil {
+		log.Println(err)
+		jsonFactory(c, 401, user, cookie.ID)
+		return
+	} else {
+		var userBody userReq
+		c.Bind(&userBody)
+		pw := encrypt(userBody.NewPassword)
 
-        match := checkPasswordHash(userBody.Password, user.Password)
-        log.Println(match)
+		match := checkPasswordHash(userBody.Password, user.Password)
+		log.Println(match)
 
-        if !match {
-            c.Status(401)
-            return
-        } else {
-            if len(userBody.NewPassword) > 0 {
-                initializers.DB.Model(&user).Update("password", pw)
-            }
-            if len(userBody.NewEmail) > 0 {
-                initializers.DB.Model(&user).Update("email", userBody.NewEmail)
-            }
-            c.JSON(200, gin.H{
-                "user": user,
-            })
-        }
-    }
+		if !match {
+			c.Status(401)
+			return
+		} else {
+			if len(userBody.NewPassword) > 0 {
+				initializers.DB.Model(&user).Update("password", pw)
+			}
+			if len(userBody.NewEmail) > 0 {
+				initializers.DB.Model(&user).Update("email", userBody.NewEmail)
+			}
+			c.JSON(200, gin.H{
+				"user": user,
+			})
+		}
+	}
 }
 
 func encrypt(str string) string {
@@ -403,49 +463,49 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 func checkForCookie(c *gin.Context) (models.Session, error) {
-    var session models.Session
+	var session models.Session
 
-    cookie, err := c.Request.Cookie("session_token")
-    if err != nil {
-        if err == http.ErrNoCookie {
-            c.Status(401)
-            return session, errors.New("No session token.")
-        }
-        c.Status(400)
-            return session, errors.New("Bad request.")
-    }
+	cookie, err := c.Request.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			c.Status(401)
+			return session, errors.New("No session token.")
+		}
+		c.Status(400)
+		return session, errors.New("Bad request.")
+	}
 
-    log.Printf("cookie: %v\n", cookie.Value)
-    sessionToken := cookie.Value
-    userSession := initializers.DB.First(&session, "id = ?", sessionToken)
-    
-    if userSession.Error != nil {
-        c.Status(401)
-        return session, errors.New("Unauthorized.")
-    }
-    
-    if session.IsExpired() {
-        initializers.DB.Delete(&session, "id = ?", session.ID)
-        // maybe?
-        session = models.Session{}
-        c.Status(401)
-        return session, errors.New("Session is expired.")
-    }
-    return session, nil
+	log.Printf("cookie: %v\n", cookie.Value)
+	sessionToken := cookie.Value
+	userSession := initializers.DB.First(&session, "id = ?", sessionToken)
+
+	if userSession.Error != nil {
+		c.Status(401)
+		return session, errors.New("Unauthorized.")
+	}
+
+	if session.IsExpired() {
+		initializers.DB.Delete(&session, "id = ?", session.ID)
+		// maybe?
+		session = models.Session{}
+		c.Status(401)
+		return session, errors.New("Session is expired.")
+	}
+	return session, nil
 }
 
 func getUser(c *gin.Context) (models.User, models.Session, error) {
+    // remove checking for cookie, do so explicitly in handlers
 	var user models.User
-    cookie, err := checkForCookie(c)
-    if err != nil {
-        log.Println(err)
-        c.Status(401)
-        return user, cookie, errors.New("No Session.")
-    }
+	cookie, err := checkForCookie(c)
+	if err != nil {
+		log.Println(err)
+		c.Status(401)
+		return user, cookie, errors.New("No Session.")
+	}
 
 	initializers.DB.First(&user, "id = ?", cookie.UserID) // userID needs to be encrypted!
 
-    log.Printf("getUserId: %v\n", user.ID)
-    return user, cookie, nil
+	log.Printf("getUserId: %v\n", user.ID)
+	return user, cookie, nil
 }
-
