@@ -63,18 +63,32 @@ func logPrefix(str string, output any, isLog bool) {
 }
 
 // https://www.enterpriseready.io/features/audit-log/
+
+// Status code logging
+type StatusRecorder struct {
+    http.ResponseWriter
+    StatusCode int
+}
+func NewStatusRecorder(w http.ResponseWriter) *StatusRecorder {
+    return &StatusRecorder{w, http.StatusOK}
+}
+
+func (sr *StatusRecorder) WriteHeader(code int) {
+    sr.StatusCode = code
+    sr.ResponseWriter.WriteHeader(code)
+}
+
 func loggingMiddleware(next http.Handler, file io.Writer) http.Handler {
     defaultWriter := io.MultiWriter(file, os.Stdout)
     writer := tabwriter.NewWriter(defaultWriter, 0, 8, 1, '\t', tabwriter.AlignRight)
     return http.HandlerFunc(
         func(w http.ResponseWriter, r *http.Request) {
-            next.ServeHTTP(w, r)
             // Actor - username, uuid, api token
             // Group - organization, team, account for team admin history
             // Where - IP address, device ID, country
             time := time.Now()
             fmt.Fprintln(writer, "Time: ", time)
-            fmt.Fprintln(writer, "Header: ")
+            fmt.Fprintln(writer, "Request Header: ")
             for key, el := range r.Header {
                 fmt.Fprintln(writer, key + "\t" + strings.Join(el, ""))
                 // fmt.Println("Key: ", key, " => ", el)
@@ -83,6 +97,7 @@ func loggingMiddleware(next http.Handler, file io.Writer) http.Handler {
             // Target - object or resource being changed, the 'noun'
             // Action - the verb, how was the object changed
             fmt.Fprintf(writer, "\n")
+            fmt.Fprintf(writer, "Path: %v\n", r.URL.Path)
             fmt.Fprintf(writer, "Method: %v\n", r.Method)
             // Action type - C, R, U, or D
             // Event Name
@@ -94,6 +109,12 @@ func loggingMiddleware(next http.Handler, file io.Writer) http.Handler {
             fmt.Fprintf(writer, "Protocol: %v\n", r.Proto)
             // Global Actor ID
             // log.Printf("Header: %v\n", r.Header)
+
+            sr := NewStatusRecorder(w)
+            next.ServeHTTP(sr, r)
+
+            fmt.Fprintf(writer, "Status Code: %v\n", sr.StatusCode)
+
             fmt.Fprintln(writer, "--------")
             writer.Flush()
         },

@@ -1,0 +1,230 @@
+Time:  2024-01-22 14:06:19.954102 +0100 CET m=+35.062363329
+Header: 
+Postman-Token	9d12f8f8-ce48-4128-bf29-71c69a7ffe32
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:11:37.8454 +0100 CET m=+6.688771252
+Header: 
+Accept		*/*
+Postman-Token	c5c1694f-c01c-498c-83be-03452941efb5
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Test: %v
+ []
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:19:43.388479 +0100 CET m=+6.877453309
+Header: 
+Postman-Token	9fc371de-8a8d-4163-86c1-007ede62f9be
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Test: %v
+ map[]
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:21:54.537798 +0100 CET m=+4.415643609
+Header: 
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	24abbf8c-57a6-44cb-8fe1-fe8a53b1ab34
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+--------
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:23:47.403089 +0100 CET m=+3.898093915
+Header: 
+Accept		*/*
+Postman-Token	b4675a95-f533-4394-8f3c-22b8e39959d9
+Cookie		session_token=f6765b57-49a2-400e-b69b-92cc481e4217
+Content-Type	application/json
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+User-Agent	PostmanRuntime/7.36.1
+--------
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:27:42.359197 +0100 CET m=+5.725981910
+Header: 
+Time:  2024-01-22 14:28:24.478847 +0100 CET m=+3.212412984
+Header: 
+Time:  2024-01-22 14:29:13.676854 +0100 CET m=+3.488511225
+Header: 
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	20a421c1-0264-44fa-9b3c-a45b332cacde
+Time:  2024-01-22 14:29:16.581714 +0100 CET m=+6.393339313
+Header: 
+Time:  2024-01-22 14:29:45.226254 +0100 CET m=+3.503766181
+Header: 
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	692de22f-b700-4861-8e3c-d27f4a8c3eb8
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:31:19.810317 +0100 CET m=+3.030974934
+Header: 
+User-Agent	PostmanRuntime/7.36.1
+Cookie		session_token=e14c8f43-d93f-4aad-b886-25d65bb718fb
+Content-Length	63
+Content-Type	application/json
+Accept		*/*
+Postman-Token	dc5a6105-624d-486e-b8d3-b5d73a33da31
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:33:15.114367 +0100 CET m=+3.720472723
+Header: 
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	9d993aed-f6cf-4415-804f-2085df139f99
+Accept-Encoding	gzip, deflate, br
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 14:56:37.53456 +0100 CET m=+5.568872849
+Header: 
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	dc65e5c9-c852-48b5-ac0f-671e0cfb0c08
+Accept-Encoding	gzip, deflate, br
+Test:  map[Content-Type:[application/json; charset=utf-8] Set-Cookie:[session_token=21227bda-8a8a-4e51-b177-aa9c9ed5c190; Expires=Mon, 22 Jan 2024 13:58:36 GMT] Vary:[Origin]]
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 15:04:56.491979 +0100 CET m=+4.460342669
+Header: 
+Accept		*/*
+Postman-Token	0497a71a-eb09-4c30-a3ea-7b666facb78f
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 15:07:01.478872 +0100 CET m=+5.375732350
+Header: 
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	5bddb32b-e118-4223-bc8c-9c8ab2d3236c
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+
+Path: /login
+Method: POST
+Protocol: HTTP/1.1
+--------
+Time:  2024-01-22 15:19:58.072182 +0100 CET m=+6.242017565
+Request Header: 
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	c5d9b2d4-22c0-41f4-830d-0f945a3a8045
+Accept-Encoding	gzip, deflate, br
+
+Path: /login
+Method: POST
+Protocol: HTTP/1.1
+--------
+Status Code: 200
+Time:  2024-01-22 15:20:07.852067 +0100 CET m=+16.021767324
+Request Header: 
+Content-Type	application/json
+Accept		*/*
+Postman-Token	4a27a64b-5d49-496f-9d9a-dec476d4e9e4
+Accept-Encoding	gzip, deflate, br
+Content-Length	63
+User-Agent	PostmanRuntime/7.36.1
+Connection	keep-alive
+Cookie		session_token=7960a7b9-3f4b-43dd-8af8-f524bba3fbc5
+
+Path: /login
+Method: POST
+Protocol: HTTP/1.1
+--------
+Status Code: 406
+Time:  2024-01-22 15:24:00.50263 +0100 CET m=+4.489017630
+Request Header: 
+Accept-Encoding	gzip, deflate, br
+Connection	keep-alive
+Content-Length	63
+Content-Type	application/json
+User-Agent	PostmanRuntime/7.36.1
+Accept		*/*
+Postman-Token	00f1f3e8-6f52-4f3c-9411-9ce5c9def1b5
+
+Path: /login
+Method: POST
+Protocol: HTTP/1.1
+Status Code: 200
+--------
+Time:  2024-01-22 15:24:02.507089 +0100 CET m=+6.493448614
+Request Header: 
+Connection	keep-alive
+Content-Length	63
+Cookie		session_token=d4e58607-f779-40c8-abf7-b4b3b4f7ca8a
+Content-Type	application/json
+Accept		*/*
+Accept-Encoding	gzip, deflate, br
+User-Agent	PostmanRuntime/7.36.1
+Postman-Token	da5fec5b-f861-46f7-a262-a3abbcc715da
+
+Path: /login
+Method: POST
+Protocol: HTTP/1.1
+Status Code: 406
+--------
